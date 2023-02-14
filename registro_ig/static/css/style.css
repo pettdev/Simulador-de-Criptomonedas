@@ -1,0 +1,100 @@
+/* Barra de navegación */
+nav {
+    border-bottom: 1px solid rgba(115, 130, 140, 0.2);
+}
+
+/* Logotipo */
+nav div a{
+    display: inline;
+    margin: 0;
+    padding-bottom: 0.80rem;
+}
+
+/* Título y Descripción */
+header div hgroup {
+    text-align: center;
+}
+
+/* Texto '[datos] no encontrado' */
+div hgroup p, div hgroup h6 {
+    text-align: center;
+}
+
+/* Imagen PNG 'No encontrado' */
+#picture_not_found {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2rem;
+    width: 15%;
+    opacity: 50%;
+}
+
+/* Pié de página */
+footer {
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.25) ;
+}
+
+/* Anchos de Precio Unitario y Botón de Envío */
+.unit_price_container, #submit_button {
+    margin-left: 50.9%;
+    max-width: 49.1%;
+}
+
+/* Precio Unitario */
+#unit_price {
+    color: hsl(205deg, 10%, 50%);
+}
+
+/* Ícono de Calculadora */
+#calculator {
+    width: 3.1rem;
+    cursor: pointer;
+    margin-top: 1.75rem;
+    transition: ease-out 0.5s;
+    padding: 0;
+}
+
+#calculator:hover{
+    transition: ease-in 0.2s;
+    box-shadow:  0px 0px 30px 0px rgba(200,200,200,0.1)
+}
+
+/* Tooltip de Calculadora */
+div[data-tooltip="Calcular compra"]{
+    height: auto;
+    width: 62px;
+    border: none;
+    cursor: default;
+}
+
+/* Correción CSS Inclusión Botón Calculadora */
+.grid-specific{
+    display: grid;
+    grid-template-columns: [first] 0.853fr [line2] minmax(62px,0.10fr) [line3] 1fr [end]; /* Calculado en base al primer grid*/
+    grid-column-gap: var(--grid-spacing-horizontal);
+    grid-row-gap: var(--grid-spacing-vertical);
+    margin: 0;
+}
+
+/* Errores */
+.errors {
+    color: #b71c1c;
+}
+
+/* Párrafo dentro del contenedor de errores */
+.errors_container p {
+    font-weight: bold;
+}
+
+/* listas dentro del contenedor de errores */
+.errors_container li {
+    padding-left: 3rem;
+    list-style-position: inside;
+}
+.errors_container {
+    background-color: #b71c1c2a;
+    padding: 3em;
+    border-radius: 5px;
+}

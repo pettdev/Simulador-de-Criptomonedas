@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+
+{% block header%}
+
+    {% if data %}
+        <div class="container">
+            <hgroup>
+                <h1>Movimientos</h1>
+                <p>Aquí puedes observar el registro de los movimientos de tu cuenta</p>
+            </hgroup>
+        </div>
+    {% endif %}
+
+{% endblock %}
+
+
+{% block section %}
+
+    {% if data %}
+
+    <!-- Cuando los datos existan, mostrar la siguiente información -->
+    <div class="container">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Venta</th>
+                    <th>Cantidad</th>
+                    <th>Compra</th>
+                    <th>Cantidad</th>
+                    <th>P.U.</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for field in data %}
+                <tr>
+                    <td>{{ field.date }}</td>
+                    <td>{{ field.time }}</td>
+                    <td>{{ field.coin_from }}</td>
+                    <td>{{ field.q_from }}</td>
+                    <td>{{ field.coin_to }}</td>
+                    <td>{{ field.q_to }}</td>
+                    <td>{{ field.unit_price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+
+    <!-- En caso de no existir datos, mostrar la siguiente información -->
+    <div class="container">
+            <hgroup>
+                <h6>¡Oops! Aún no tienes movimientos por aquí...</h6>
+                <p>¡Ve a la <a class="secondary" href="/purchase">Sección de Compra</a> y realiza tu primera inversión!</p>
+            </hgroup>
+    </div>
+    <img id="picture_not_found" src="static\images\Not found.png" alt="Registro no disponible" draggable="false">
+    {% endif %}
+
+{% endblock %}

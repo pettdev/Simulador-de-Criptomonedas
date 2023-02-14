@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+
+<!-- Título y descripción de página-->
+{% block header%}
+    <header>
+        <div class="container">
+            <hgroup>
+                <h1>Compra de Criptos</h1>
+                <p>Comprar y vender entre tus monedas fiat y criptomonedas ahora es fácil</p>
+            </hgroup>
+        </div>
+    </header>
+{% endblock %}
+
+<!-- Formulario de Compra -->
+{% block section %}
+
+    <!-- Lista de Errores -->
+    {% if form.errors.items() %}
+
+        <section class="container errors_container">
+            <p>¡Oops! ocurrieron algunos problemas con su compra. Por favor, corrija los siguientes errores:</p>
+
+            {% for field, errors in form.errors.items() %}
+                    <li class="errors">{{ ', '.join(errors) }}</li>
+            {% endfor %}
+            {% if form.q_to.errors or form.unit_price_errors %}
+                <li class="errors">Para rellenar Cantidad de compra y Precio unitario, debe hacer click en el botón de calculadora.</li>
+            {% endif %}
+        </section>
+        
+    {% endif %}
+
+    <form action="/purchase" class="container" method="post">
+        {{ form.csrf_token }}
+
+        <!-- Primera fila -->
+        <div class="grid">
+
+            <!-- Moneda a vender -->
+            {% if form.coin_from.errors %}
+                <label for="{{ form.coin_from.name }}" class="errors">
+                    Moneda a vender:
+                    <select name="{{ form.coin_from.name }}" id="{{ form.coin_from.id }}" aria-invalid="true"> 
+                        {% for option in form.coin_from %}
+                            {% if loop.first %}
+                                <option value="" disabled selected>Seleccionar una opción</option>
+                            {% endif %}
+                            {{option}}
+                        {% endfor %}
+                    </select>
+                </label>
+            {% else %}
+            <label for="{{ form.coin_from.name }}">
+                Moneda a vender:
+                <select name="{{ form.coin_from.name }}" id="{{ form.coin_from.id }}"> 
+                    {% for option in form.coin_from %}
+                        {% if loop.first %}
+                            <option value="" disabled selected>Seleccionar una opción</option>
+                        {% endif %}
+                        {{option}}
+                    {% endfor %}
+                </select>
+            </label>
+            {% endif %}
+
+            <!-- Moneda a comprar -->
+            {% if form.coin_to.errors %}
+                <label for="{{ form.coin_to.name }}" class="errors">
+                    Moneda a comprar:
+                    <select name="{{ form.coin_to.name }}" id="{{ form.coin_to.id }}" aria-invalid="true">
+                        {% for option in form.coin_to %}
+                            {% if loop.first %}
+                                <option value disabled selected>Seleccionar una opción</option>
+                            {% endif %}
+                            {{option}}
+                        {% endfor %}
+                    </select>
+                </label>
+            {% else %}
+                <label for="{{ form.coin_to.name }}">
+                    Moneda a comprar:
+                    <select name="{{ form.coin_to.name }}" id="{{ form.coin_to.id }}">
+                        {% for option in form.coin_to %}
+                            {% if loop.first %}
+                                <option value disabled selected>Seleccionar una opción</option>
+                            {% endif %}
+                            {{option}}
+                        {% endfor %}
+                    </select>
+                </label>
+            {% endif %}
+        </div>
+
+        <!-- Segunda fila -->
+        <div class="grid-specific">
+
+            <!-- Cantidad a vender -->
+            {% if form.q_from.errors %}
+                <div>
+                    <label for="{{ form.q_from.name }}" class="errors">
+                        Cantidad a vender:
+                        
+                        {{ form.q_from(placeholder="Cantidad inválida", min="1", **{"aria-invalid": "true"}) }}
+                        
+                    </label>
+                </div>
+            {% else %}
+            <div>
+                <label for="{{ form.q_from.name }}">
+                    Cantidad a vender:
+                    
+                    {{ form.q_from(placeholder="Ingresar cantidad a vender", min="1") }}
+
+
+                </label>
+            </div>
+            {% endif %}
+
+            <!-- Ícono de calculadora -->
+            <div data-tooltip="Calcular compra">
+                <input type="image" class="grid" src="../static/images/calculator.svg" id="calculator" value="Calculate" name="calculate">
+            </div>
+
+            
+            <!-- Cantidad a comprar -->
+            {% if form.q_to.errors %}
+                <div>
+                    <label for="{{ form.q_to.name }}" class="errors">
+                        Cantidad a comprar:
+                        {{ form.q_to(placeholder="Campo vacío", **{"aria-invalid": "true"}) }}
+                    </label>
+                </div>
+            {% else %}
+                <div>
+                    <label for="{{ form.q_to.name }}">
+                        Cantidad a comprar:
+                        <input id="{{ form.q_to.name }}" name="{{ form.q_to.name }}" placeholder="Cantidad de compra" readonly="" required="" type="text" value="{{ form_values.q_to_value }}">
+                    </label>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Precio Unitario -->
+        {% if form.unit_price.errors %}
+            <div class="unit_price_container">
+                <label for="{{ form.unit_price.name }}" class="errors">
+                    Precio unitario (P.U.):
+                    {{ form.unit_price (placeholder="Campo vacío", **{"aria-invalid": "true"})}}
+                </label>
+            </div>
+        {% else %}
+            <div class="unit_price_container">
+                <label for="{{ form.unit_price.name }}">
+                    Precio unitario (P.U.):
+                    <input id="{{ form.unit_price.name }}" name="{{ form.unit_price.name }}" placeholder="Precio unitario de compra" readonly="" required="" type="text" value="{{ form_values.unit_price_value }}">
+                </label>
+            </div>
+        {% endif %}
+        
+        <!-- Botón de envío -->
+        <label for="{{ form.submit_button.name }}">
+            {{ form.submit_button }}
+        </label>
+
+
+    </form>
+{% endblock %}

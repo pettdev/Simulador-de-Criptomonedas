@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{pageTitle}} - CryptoDex</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/images/CryptoDex-Favicon.ico">
+
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="/static/css/pico.min.css">
+
+    <!-- CSS específico -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="container-fluid">
+
+        <!-- Logo -->
+        <div>
+            <a href="/">
+                <img src="../static/images/CryptoDex_Logo.svg" alt="Logotipo de CryptoDex">
+            </a>
+        </div>
+
+        <!-- Enlaces -->
+        <div>
+            {% if page == 'index.html' %}
+                <li><a class="{{inicio}}"">Inicio</a></li>
+                <li><a href="/purchase">Compra</a></li>
+                <li><a href="/status">Status</a></li>
+            {% elif page == 'purchase.html' %}
+                <li><a href="/">Inicio</a></li>
+                <li><a class="{{compra}}"">Compra</a></li>
+                <li><a href="/status">Status</a></li>
+            {% elif page == 'status.html' %}
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/purchase">Compra</a></li>
+                <li><a class="{{status}}">Status</a></li>
+            {% endif %}
+        </div>
+
+
+    </nav>
+
+    <!-- Encabezado -->
+    <header>
+        {% block header %}
+        {% endblock %}
+    </header>
+
+    <!-- Sección principal -->
+    <section>
+        {% block section %}
+        {% endblock %}
+    </section>
+
+    <!-- Pié de página -->
+    <footer class="container-fluid">
+        <hgroup>
+            <h6>
+                Copyright © 2023 CryptoDex, Inc.
+            </h6>
+            <p> Todos los derechos reservados.</p>
+        </hgroup>
+    </footer>
+</body>
+</html>
