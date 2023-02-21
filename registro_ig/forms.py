@@ -1,7 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import SelectField, StringField, SubmitField, DateField, FloatField
 from wtforms.validators import DataRequired
-from registro_ig.models import Exchange
 
 
 class PurchaseForm(FlaskForm):

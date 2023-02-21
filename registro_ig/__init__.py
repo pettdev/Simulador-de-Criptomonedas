@@ -5,4 +5,4 @@ app = Flask(__name__, instance_relative_config=True)
 # Lectura de clave secreta de config.py
 app.config.from_object("config")
 
-import registro_ig
+from registro_ig.routes import *

@@ -1,7 +1,6 @@
 import sqlite3 as sql
 from config import *
 
-
 class Connection:
     def __init__(self,query,args=[]):
         self.con = sql.connect(ORIGIN_DATA)
