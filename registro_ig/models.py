@@ -123,15 +123,17 @@ def get_acquisition_value(inversion, recovery):
 # que se deben sumar, y este total es el Valor Actual
 
 # Obtener el saldo de cada moneda (uniendo coin_from y coin_to) equivalente en EUR
-def get_each_coin_eur_balance(coin_from_list, coin_to_list, Exchange_Class):
+def get_current_value(coin_from_list, coin_to_list, Exchange_Class):
+    
     if isinstance(coin_from_list, list) and isinstance(coin_to_list, list):
         output = {}
+        total = 0 # Valor actual (valor total de cartera en euros)
         exch = Exchange_Class
         
         coin_from_dict = dict(coin_from_list)
         coin_to_dict = dict(coin_to_list)
         
-        # Selecciona el diccionario con mayor número de monedas
+        ## Selecciona el diccionario con mayor número de monedas
         
         if len(coin_from_dict) > len(coin_to_dict):
             all_coins = coin_from_dict
@@ -140,7 +142,7 @@ def get_each_coin_eur_balance(coin_from_list, coin_to_list, Exchange_Class):
             all_coins = coin_to_dict
             other_dict = coin_from_dict
         
-        # Agrega las monedas en output
+        ## Agrega las monedas en output
         
         for coin in all_coins:
             
@@ -152,34 +154,29 @@ def get_each_coin_eur_balance(coin_from_list, coin_to_list, Exchange_Class):
                     
                     # Obtener tasa con CoinAPI
                     exch.get_rate(coin, 'EUR', API_KEY)
-                    output[coin] = (coin_to_dict[coin] - coin_from_dict.get(coin, 0)) * exch.rate
+                    euros = (coin_to_dict[coin] - coin_from_dict.get(coin, 0)) * exch.rate
+                    output[coin] = euros
+                    total += euros
                     
                 # Agregar EUR en ouput y no usar la API
                 else:
-                    output[coin] = coin_to_dict[coin] - coin_from_dict.get(coin, 0)
+                    euros = coin_to_dict[coin] - coin_from_dict.get(coin, 0)
+                    output[coin] = euros
+                    total += euros
                     
             # Si no está en el otro diccionario, agrega la moneda y obtén EUR
             else:
-                 # obtener tasa con CoinAPI
+                # Obtener tasa con CoinAPI
                 exch.get_rate(coin, 'EUR', API_KEY)
-                output[coin] = all_coins[coin] * exch.rate      
+                euros = all_coins[coin] * exch.rate
+                output[coin] = euros
+                total += euros
                 
+        output['total_value'] = total
+        
         return output
     
     raise ModelError('The coins variable must be a list object')
 
 
-#get_each_coin_eur_balance(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange())
-
-
-'''Para ello debemos determinar que criptomonedas tenemos y que cantidad de las mismas.
-
-BTC: Suma de cantidades to - Suma de cantidades from → 0,1 - 0,05 → 0,05 BTC
-ETH: Suma de cantidades to - Suma de cantidades from → 2 - 1 → 1 ETH'''
-# print("INVERSIÓN:", get_eur_inversion())
-# print("RECUPERACIÓN:", get_eur_recovery())
-# print('TOTAL Q_tO DE CADA MONEDA_TO', get_each_coin_to_balance())
-# print('TOTAL Q_FROM DE CADA MONEDA_FROM', get_each_coin_from_balance())
-# print("#####################################################################################################\n",
-# get_each_coin_eur_balance(get_each_coin_from_balance(),get_each_coin_to_balance()),
-# "\n#################################################################################################")
+print(get_current_value(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange()))
