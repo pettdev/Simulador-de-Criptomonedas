@@ -37,7 +37,7 @@ def insert_row(register):
     connection.con.close()
 
 # Mostrar la tabla de la base de datos
-def select_table():
+def table_display():
     connection = Connection('SELECT date, time, coin_from, q_from, coin_to, q_to, unit_price FROM transactions ORDER BY date;')
     rows = connection.res.fetchall()
     fields = connection.res.description
@@ -58,25 +58,8 @@ def select_table():
 
     return results
 
-# Obtener el saldo total de cada moneda DE VENTA
-def get_each_coin_from_balance():
-    connection = Connection('SELECT coin_from, SUM (q_from) FROM transactions GROUP BY coin_from;')
-    data = connection.res.fetchall()
-    connection.con.commit()
-    connection.con.close()
-    
-    return data
 
-# Obtener el saldo total de cada moneda DE COMPRA
-def get_each_coin_to_balance():
-    connection = Connection('SELECT coin_to, SUM (q_to) FROM transactions GROUP BY coin_to;')
-    data = connection.res.fetchall()
-    connection.con.commit()
-    connection.con.close()
-    
-    return data
-
-# Obtener suma total de inversión cuya moneda sea EUROS
+# Obtener suma total de INVERSIÓN cuya moneda sea EUROS
 def get_eur_inversion():
     connection = Connection("SELECT coin_from, SUM (q_from) FROM transactions WHERE coin_from='EUR'")
     data = connection.res.fetchall()
@@ -85,7 +68,8 @@ def get_eur_inversion():
     
     return data
 
-# Obtener suma total recuperado cuya moneda sea EUROS
+
+# Obtener suma total RECUPERADO cuya moneda sea EUROS
 def get_eur_recovery():
     connection = Connection("SELECT coin_to, SUM (q_to) FROM transactions WHERE coin_to='EUR'")
     data = connection.res.fetchall()
@@ -93,6 +77,7 @@ def get_eur_recovery():
     connection.con.close()
 
     return data
+
 
 # Obtener valor de compra
 def get_acquisition_value(inversion, recovery):
@@ -102,33 +87,33 @@ def get_acquisition_value(inversion, recovery):
     raise ModelError("Inversion or Recovery amount must be float type.")
 
 
-# ([('BNB', 100.0), ('BTC', 0.05), ('ETH', 250.0), ('EUR', 11375.0)]
-# [('BNB', 0.33506874), ('BTC', 0.53956739), ('ETH', 0.1893946), ('EUR', 1035.87947299), ('USDT', 389911.95221154), ('XRP', 77975.35918916)])
+# Obtener el saldo total de cada coin_from en euros
+def get_each_coin_from_balance():
+    connection = Connection('SELECT coin_from, SUM (q_from) FROM transactions GROUP BY coin_from;')
+    data = connection.res.fetchall()
+    connection.con.commit()
+    connection.con.close()
+    
+    return data
 
-# PASO 1
-# Se debe restar cada total de cantidad_to de cada moneda_to con...
-# ... cada respectivo total cantidad_from de la misma moneda_from
-# Es decir, total q_to de BTC - total q_from de BTC
-# (Aplicado individualmente a cada moneda comprada o vendida)
 
-# PASO 2
-# Se debe consultar el precio en EUROS de cada respectiva moneda con CoinAPI
-# multiplicar la cantidad de la criptomoneda o moneda en cuestión
-# y obtener el total en euros de cada moneda_from y moneda_to multiplicado por...
-# ... el precio unitario en euros de CoinAPI
+# Obtener el saldo total de cada coin_to en euros
+def get_each_coin_to_balance():
+    connection = Connection('SELECT coin_to, SUM (q_to) FROM transactions GROUP BY coin_to;')
+    data = connection.res.fetchall()
+    connection.con.commit()
+    connection.con.close()
+    
+    return data
 
-# PASO 3
-# Luego de haber obtenido cada euro equivalente para cada moneda...
-# ... debe quedar una lista de monedas (sin importar si son coin_from o coin_to)...
-# que se deben sumar, y este total es el Valor Actual
 
-# Obtener el saldo de cada moneda (uniendo coin_from y coin_to) equivalente en EUR
-def get_current_value(coin_from_list, coin_to_list, Exchange_Class):
+# Obtener Valor Actual de la cuenta en euros
+def get_current_value(coin_from_list, coin_to_list, ExchangeClass):
     
     if isinstance(coin_from_list, list) and isinstance(coin_to_list, list):
         output = {}
         total = 0 # Valor actual (valor total de cartera en euros)
-        exch = Exchange_Class
+        exch = ExchangeClass
         
         coin_from_dict = dict(coin_from_list)
         coin_to_dict = dict(coin_to_list)
@@ -150,10 +135,10 @@ def get_current_value(coin_from_list, coin_to_list, Exchange_Class):
             if coin in other_dict:
                 
                 # Agregar moneda si no es EUR a output
-                if coin != 'EUR':
+                if coin != "EUR":
                     
                     # Obtener tasa con CoinAPI
-                    exch.get_rate(coin, 'EUR', API_KEY)
+                    exch.get_rate(coin, "EUR", API_KEY)
                     euros = (coin_to_dict[coin] - coin_from_dict.get(coin, 0)) * exch.rate
                     output[coin] = euros
                     total += euros
@@ -167,16 +152,68 @@ def get_current_value(coin_from_list, coin_to_list, Exchange_Class):
             # Si no está en el otro diccionario, agrega la moneda y obtén EUR
             else:
                 # Obtener tasa con CoinAPI
-                exch.get_rate(coin, 'EUR', API_KEY)
+                exch.get_rate(coin, "EUR", API_KEY)
                 euros = all_coins[coin] * exch.rate
                 output[coin] = euros
                 total += euros
                 
-        output['total_value'] = total
+        output["total_value"] = total
         
         return output
     
-    raise ModelError('The coins variable must be a list object')
+    raise ModelError("The coins variable must be a list object")
 
 
-print(get_current_value(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange()))
+#print(get_current_value(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange()))
+
+class AssetPurchaseValidator:
+    def init(self, eur_balance):
+        self.balances = {'EUR': eur_balance}
+        self.eur_balance = self.balances['EUR']
+        
+        
+    def validateTrade(self, asset, amount):
+        if asset not in self.balances:     
+            self.balances[asset] = 0
+        if amount > self.balances[asset]:
+            print(f"Not enough {asset} balance. The cost is {amount}, but you have only {self.balances[asset]} {asset}.")
+            return False
+        elif amount < 0:
+            print(f"The amount can't be a negative balance. Your current EUR balance is {self.balances[asset]} {asset}.")
+            return False
+        return True
+        
+    
+    def buy(self, asset, amount):
+        if self.validateTrade(asset, amount):
+            if asset == 'EUR':
+                self.eur_balance += amount
+            else:    
+                self.balances[asset] += amount
+        raise ModelError(f'Error: Verify buying asset ({asset}) amount or asset name.')
+    
+    
+    def sell(self, asset, amount):
+        if self.validateTrade(asset, amount):
+            if asset == 'EUR':
+                self.eur_balance -= amount
+            else:
+                self.balances[asset] -= amount
+        raise ModelError(f'Error: Verify selling asset ({asset}) amount or asset name.')
+
+
+    def trade(self, buying_asset, buying_amount, selling_asset, selling_amount):
+        # buying asset is coin_to
+        # buying amount is q_to
+        self.buy(buying_asset, buying_amount)
+    
+        # selling asset is coin_from
+        # selling amount is q_from
+        self.sell(selling_asset, selling_amount)
+        
+        return True
+        
+        
+    
+    def get_asset_balance(self, asset):
+        return self.balances[asset]

@@ -10,7 +10,7 @@ from config import *
 @app.route("/")
 def index():
     
-    register = select_table()
+    register = table_dispplay()
     
     return render_template('index.html', pageTitle='Registro de movimientos', inicio="secondary", page='index', data=register)
 
@@ -24,7 +24,9 @@ def purchase():
         return render_template('purchase.html', form=form, pageTitle='Compra de criptos', compra="secondary", page='purchase', form_values=None)
     
     ### Métodos POST ###
-        
+    
+    balance = {} # Saldo
+    
     # Obtener Fecha y Hora
     now = datetime.now()
     time = now.strftime("%H:%M:%S")
@@ -32,7 +34,9 @@ def purchase():
 
     ## POST Botón ##
     if 'submit_button' in request.form:
-    
+        
+        ### AQUI BALANCES Y VALIDACION
+        
         if form.validate_on_submit():
             
             insert_row([
@@ -67,12 +71,12 @@ def purchase():
         unit_price = round(exch.unit_price, 8)
 
         # Datos a enviar al formulario
-        send_data = {
+        data_retrieved = {
             "q_to_value": q_to,
             "unit_price_value": unit_price
             }
         
-        return render_template('purchase.html', form=form, form_values=send_data, pageTitle='Compra de criptos', compra="secondary", page='purchase')
+        return render_template('purchase.html', form=form, form_values=data_retrieved, pageTitle='Compra de criptos', compra="secondary", page='purchase')
             
 
 @app.route("/status")
