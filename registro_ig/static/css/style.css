@@ -88,13 +88,16 @@ div[data-tooltip="Calcular compra"]{
     font-weight: bold;
 }
 
-/* listas dentro del contenedor de errores */
+/* Listas dentro del contenedor de errores */
 .errors_container li {
     padding-left: 3rem;
     list-style-position: inside;
 }
+/* Contenedor de errores */
 .errors_container {
     background-color: #b71c1c2a;
     padding: 3em;
     border-radius: 5px;
+    border: #b71c1c solid 1px;
+
 }

@@ -6,11 +6,9 @@ from datetime import datetime
 from config import *
 
 
-
 @app.route("/")
 def index():
-    
-    register = table_dispplay()
+    register = table_display()
     
     return render_template('index.html', pageTitle='Registro de movimientos', inicio="secondary", page='index', data=register)
 
@@ -19,42 +17,45 @@ def index():
 def purchase():
     form = PurchaseForm()
     
-    if request.method == 'GET': ### Método GET ###
+    # # # Método GET # # #
+    if request.method == 'GET':
         
         return render_template('purchase.html', form=form, pageTitle='Compra de criptos', compra="secondary", page='purchase', form_values=None)
     
-    ### Métodos POST ###
+    # # # Método POST # # #
+    eur_balance = 1000 # Balance de euros
     
-    balance = {} # Saldo
+    # Validador de Cartera
+    validate_wallet = AssetTradeValidator(eur_balance)
     
-    # Obtener Fecha y Hora
-    now = datetime.now()
-    time = now.strftime("%H:%M:%S")
-    date = now.strftime("%Y-%m-%d")
-
-    ## POST Botón ##
+    # # POST - Botón de formulario # #
     if 'submit_button' in request.form:
-        
-        ### AQUI BALANCES Y VALIDACION
-        
+        coin_from = form.coin_from.data
+        q_from = form.q_from.data
+        coin_to = form.coin_to.data
+        q_to = form.q_to.data
+        unit_price = form.unit_price.data
+
         if form.validate_on_submit():
             
-            insert_row([
-                date,
-                time,
-                form.coin_from.data,
-                form.q_from.data,
-                form.coin_to.data,
-                form.q_to.data,
-                form.unit_price.data
-                ])
+             # Obtener Fecha y Hora
+            now = datetime.now()
+            time = now.strftime("%H:%M:%S")
+            date = now.strftime("%Y-%m-%d")
             
-            return redirect(url_for('index'))
+            print('############################ Here ///////////////////////////////',
+                validate_wallet.balances)
+                    
+            if validate_wallet.execute(coin_from, q_from, coin_to, q_to):
+                insert_row([date, time, coin_from, q_from, coin_to, q_to, unit_price])
+
+                # SERÍA BUENO QUE FUNCIONARA EL FLASH para accesibilidad de errores.
+                return redirect(url_for('index'))
+    
+        return render_template('purchase.html', form=form, pageTitle='Compra de criptos', compra="secondary", page='purchase', form_values=None)
         
-        return render_template('purchase.html', form=form, pageTitle='Compra de criptos', compra="secondary", page='purchase')
         
-        
-    ## POST Calculadora ##
+    # # POST - Calculadora # #
     if "calculate.x" and "calculate.y" in request.form:
         
         # Definir elecciones del usuario
@@ -88,14 +89,3 @@ def status():
     valor_actual = None
     
     return render_template('status.html', pageTitle='Estado de la inversión', status="secondary", page='status', invertido=invertido, recuperado=recuperado, valor_compra=valor_compra, valor_actual=valor_actual)
-
-# Validación de errores
-
-def validate_q_from(form,field):
-    if field.data < 0:
-        raise ValidationError("Cantidad a vender: Por favor, ingrese una cantidad válida.")
-    if field.data == 0:
-        raise ValidationError("Cantidad a vender: La cantidad debe ser mayor a cero.")
-    
-def validate_coin_balances(form, field, coin):
-    pass

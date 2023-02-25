@@ -21,12 +21,13 @@ class Exchange():
             self.time = exchangeInfo['time']
 
         else:
-            raise ModelError(f"Status: {r.status_code}. Error: {self.exchangeInfo['error']}")
+            exchangeError = r.json()['error']
+            raise ModelError(f"Status: {r.status_code}. Error: {exchangeError}")
 
     def get_unit_price(self, q_from, q_to):
             self.unit_price = q_from/q_to
             
-            
+
 # Métodos para manipulación de datos 
 
 # Insertar información ingresada por el usuario
@@ -108,12 +109,12 @@ def get_each_coin_to_balance():
 
 
 # Obtener Valor Actual de la cuenta en euros
-def get_current_value(coin_from_list, coin_to_list, ExchangeClass):
+def get_current_value(coin_from_list, coin_to_list, ExchangeService):
     
     if isinstance(coin_from_list, list) and isinstance(coin_to_list, list):
         output = {}
         total = 0 # Valor actual (valor total de cartera en euros)
-        exch = ExchangeClass
+        exch = ExchangeService
         
         coin_from_dict = dict(coin_from_list)
         coin_to_dict = dict(coin_to_list)
@@ -163,52 +164,91 @@ def get_current_value(coin_from_list, coin_to_list, ExchangeClass):
     
     raise ModelError("The coins variable must be a list object")
 
+# print(get_current_value(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange()))
 
-#print(get_current_value(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange()))
+class AssetTradeValidator:
+    def __init__(self, eur):
+        # Saldos de monedas
+        purchased_coins = dict(get_each_coin_to_balance()) # Compradas
+        sold_coins = dict(get_each_coin_from_balance()) # Vendidas
 
-class AssetPurchaseValidator:
-    def init(self, eur_balance):
-        self.balances = {'EUR': eur_balance}
-        self.eur_balance = self.balances['EUR']
+        # Unir diccionarios en sold_coins
+        for key, value in purchased_coins.items():
+            sold_coins[key] = value
         
+        self.balances = sold_coins
+        self.eur_balance = eur_balance
+
+
+    def validate_eur(self, selling_amount):
         
-    def validateTrade(self, asset, amount):
-        if asset not in self.balances:     
-            self.balances[asset] = 0
-        elif amount > self.balances[asset]:
-            print(f"Not enough {asset} balance. The cost is {amount}, but you have only {self.balances[asset]} {asset}.")
-            return False
-        elif amount < 0:
-            print(f"The amount can't be a negative balance. Your current EUR balance is {self.balances[asset]} {asset}.")
-            return False
-        return True
-        
-    
-    def buy(self, asset, amount):
-        if self.validateTrade(asset, amount):
-            if asset == 'EUR':
-                self.eur_balance += amount
-            else:    
-                self.balances[asset] += amount
-        raise ModelError(f'Error: Verify buying asset ({asset}) amount.')
-    
-    
-    def sell(self, asset, amount):
-        if self.validateTrade(asset, amount):
-            if asset == 'EUR':
-                self.eur_balance -= amount
+        # Si existe el total de euros gastados y el saldo en euros existen...
+        if self.balances['EUR'] and self.eur_balance:
+            eur_available = self.eur_balance - self.balances['EUR'] # Euros disponibles
+            
+            # Si el gasto total de euros > saldo disponible de euros:
+            if self.balances['EUR'] > self.eur_balance:
+                print(f"Not enough EUR balance. The cost is {selling_amount}, but you have only {self.balances['EUR']} EUR.")
+                return False
+            # Si la diferencia del saldo disponible y el gasto total es negativa:
+            elif self.eur_balance - self.balances['EUR'] < 0:
+                return False
             else:
-                self.balances[asset] -= amount
-        raise ModelError(f'Error: Verify selling asset ({asset}) amount.')
+                # De lo contrario,
+                # Si el saldo 
+                self.balances['EUR'] -= self.balances['EUR']
+                return True
+        print("EUR balance or EUR balance are required.")
+        return False
 
 
-    def trade(self, buying_asset, buying_amount, selling_asset, selling_amount):
-        self.sell(selling_asset, selling_amount) # coin_from, q_from
-        self.buy(buying_asset, buying_amount) # coin_to, q_to
-        
+    def validate_trade(self, asset, amount, buy): 
+        # Si es una venta
+        if not buy: 
+            if asset not in self.balances:     
+                return False
+            
+            elif asset != 'EUR':
+                if amount > self.balances[asset]:
+                    print(f"Not enough {asset} balance. The cost is {amount}, but you have only {self.balances[asset]} {asset}.")
+                    return False
+                elif amount < 0:
+                    print(f"The amount can't be a negative balance. Your current EUR balance is {self.balances[asset]} {asset}.")
+                    return False
+                
+        # Si es una compra
+        else:
+            if asset not in self.balances:
+                self.balances[asset] = amount
+            
         return True
         
-        
+    
+    def buy(self, asset, amount, buy=True):
+        if self.validate_trade(asset, amount, buy):
+            self.balances[asset] += amount
+            return True
+        else:
+            print(f"Error: Verify buying asset {asset} amount.")
+            return False
+    
+    
+    def sell(self, asset, amount, buy=False):
+        if self.validate_trade(asset, amount, buy):
+            if asset == 'EUR':
+                return self.validate_eur(selling_amount)
+
+            return True
+        print(f"Error: Verify selling asset {asset} amount.")
+        return False
+
+
+    def execute(self, selling_asset, selling_amount, buying_asset, buying_amount):
+        return self.sell(selling_asset, selling_amount) and self.buy(buying_asset, buying_amount)
+    
     
     def get_asset_balance(self, asset):
         return self.balances[asset]
+    
+    
+    

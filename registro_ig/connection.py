@@ -7,25 +7,25 @@ class Connection:
         self.cur = self.con.cursor()
         self.res = self.cur.execute(query,args)
         
-    def createDB():
-        con = sql.connect('transactions.db')
-        con.commit()
-        con.close()
-    
-    def createTable():
-        con = sql.connect('transactions.db')
-        cur = con.cursor()
-        cur.execute('''CREATE TABLE transactions (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                        date TEXT NOT NULL,
-                        time TEXT NOT NULL,
-                        coin_from TEXT NOT NULL,
-                        q_from REAL NOT NULL,
-                        coin_to TEXT NOT NULL,
-                        q_to REAL NOT NULL,
-                        unit_price REAL NOT NULL
-                    )''')
-        con.commit()
-        con.close()
-        
 
+def createDB():
+    con = sql.connect('transactions.db')
+    con.commit()
+    con.close()
+
+
+def createTable():
+    con = sql.connect('transactions.db')
+    cur = con.cursor()
+    cur.execute('''CREATE TABLE transactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    date TEXT NOT NULL,
+                    time TEXT NOT NULL,
+                    coin_from TEXT NOT NULL,
+                    q_from REAL NOT NULL,
+                    coin_to TEXT NOT NULL,
+                    q_to REAL NOT NULL,
+                    unit_price REAL NOT NULL
+                )''')
+    con.commit()
+    con.close()
