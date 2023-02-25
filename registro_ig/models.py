@@ -175,7 +175,7 @@ class AssetPurchaseValidator:
     def validateTrade(self, asset, amount):
         if asset not in self.balances:     
             self.balances[asset] = 0
-        if amount > self.balances[asset]:
+        elif amount > self.balances[asset]:
             print(f"Not enough {asset} balance. The cost is {amount}, but you have only {self.balances[asset]} {asset}.")
             return False
         elif amount < 0:
@@ -190,7 +190,7 @@ class AssetPurchaseValidator:
                 self.eur_balance += amount
             else:    
                 self.balances[asset] += amount
-        raise ModelError(f'Error: Verify buying asset ({asset}) amount or asset name.')
+        raise ModelError(f'Error: Verify buying asset ({asset}) amount.')
     
     
     def sell(self, asset, amount):
@@ -199,17 +199,12 @@ class AssetPurchaseValidator:
                 self.eur_balance -= amount
             else:
                 self.balances[asset] -= amount
-        raise ModelError(f'Error: Verify selling asset ({asset}) amount or asset name.')
+        raise ModelError(f'Error: Verify selling asset ({asset}) amount.')
 
 
     def trade(self, buying_asset, buying_amount, selling_asset, selling_amount):
-        # buying asset is coin_to
-        # buying amount is q_to
-        self.buy(buying_asset, buying_amount)
-    
-        # selling asset is coin_from
-        # selling amount is q_from
-        self.sell(selling_asset, selling_amount)
+        self.sell(selling_asset, selling_amount) # coin_from, q_from
+        self.buy(buying_asset, buying_amount) # coin_to, q_to
         
         return True
         
