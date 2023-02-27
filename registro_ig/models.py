@@ -166,8 +166,27 @@ def get_current_value(coin_from_list, coin_to_list, ExchangeService):
 
 # print(get_current_value(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange()))
 
+
+def increment_amount(amount:float, asset:str):
+    connection = Connection(f"UPDATE assets set amount= amount + {amount} WHERE asset='{asset}'")
+    connection.con.commit()
+    connection.con.close()
+
+    
+def decrement_amount(amount:float, asset:str):
+    connection = Connection(f"UPDATE assets set amount= amount - {amount} WHERE asset='{asset}'")
+    connection.con.commit()
+    connection.con.close()
+
+
+def register_asset(register):
+    connection = Connection("INSERT INTO assets (asset, amount) VALUES (?, ?)", register)
+    connection.con.commit()
+    connection.con.close()
+
+
 class AssetTradeValidator:
-    def __init__(self, eur):
+    def __init__(self, eur_balance):
         # Saldos de monedas
         purchased_coins = dict(get_each_coin_to_balance()) # Compradas
         sold_coins = dict(get_each_coin_from_balance()) # Vendidas
@@ -176,74 +195,90 @@ class AssetTradeValidator:
         for key, value in purchased_coins.items():
             sold_coins[key] = value
         
-        self.balances = sold_coins
         self.eur_balance = eur_balance
-
+        self.balances = sold_coins
 
     def validate_eur(self, selling_amount):
         
-        # Si existe el total de euros gastados y el saldo en euros existen...
-        if self.balances['EUR'] and self.eur_balance:
-            eur_available = self.eur_balance - self.balances['EUR'] # Euros disponibles
-            
-            # Si el gasto total de euros > saldo disponible de euros:
-            if self.balances['EUR'] > self.eur_balance:
-                print(f"Not enough EUR balance. The cost is {selling_amount}, but you have only {self.balances['EUR']} EUR.")
+        # Continúa solo si el balance de euros existe
+        if self.eur_balance:
+            # Agregar moneda euros si no existe
+            if 'EUR' not in self.balances:
+                self.balances['EUR'] = 0
+                register_asset(['EUR', 0])
+
+            # Euros disponibles: Saldo del Usuario - Total Euros gastados (de la BBDD)
+            eur_available = self.eur_balance - self.balances['EUR']
+
+            # Si la cantidad de venta > saldo disponible de euros:
+            if selling_amount > eur_available:
+                print(f"\nNot enough EUR balance. The cost is {selling_amount}, but you have only {eur_available} EUR.\n")
                 return False
             # Si la diferencia del saldo disponible y el gasto total es negativa:
-            elif self.eur_balance - self.balances['EUR'] < 0:
+            elif eur_available < 0:
+                print(f"Fondos insuficientes. Por favor, recargar.")
                 return False
-            else:
-                # De lo contrario,
-                # Si el saldo 
-                self.balances['EUR'] -= self.balances['EUR']
-                return True
-        print("EUR balance or EUR balance are required.")
+            
+            return True
+        print("Nonexistent euro balance.")
         return False
 
 
     def validate_trade(self, asset, amount, buy): 
         # Si es una venta
-        if not buy: 
-            if asset not in self.balances:     
+        if not buy:
+            # Si no existe como moneda de compra, no permitir
+            if asset not in self.balances:
+                # Permitir agregar EUR por primera vez
+                if asset == 'EUR':
+                    return True
                 return False
-            
+            # Aplicar validaciones al monto de todas las monedas (excepto EUR)
             elif asset != 'EUR':
+                decrement_amount(amount, asset)
+                # No puede superar el balance
                 if amount > self.balances[asset]:
                     print(f"Not enough {asset} balance. The cost is {amount}, but you have only {self.balances[asset]} {asset}.")
                     return False
+                # No puede ser negativo
                 elif amount < 0:
                     print(f"The amount can't be a negative balance. Your current EUR balance is {self.balances[asset]} {asset}.")
                     return False
+            else:
+                # Si no existe, sumar
+                increment_amount(amount, asset)
                 
         # Si es una compra
         else:
+            # Superada la validación sell, permitir agregar moneda comprada
             if asset not in self.balances:
-                self.balances[asset] = amount
-            
+                register_asset([asset, amount])
+            else:
+                increment_amount(amount, asset)
         return True
         
     
     def buy(self, asset, amount, buy=True):
         if self.validate_trade(asset, amount, buy):
-            self.balances[asset] += amount
             return True
-        else:
-            print(f"Error: Verify buying asset {asset} amount.")
-            return False
+        print(f"Buying_asset error: Verify {asset} amount.")
+        return False
     
     
     def sell(self, asset, amount, buy=False):
         if self.validate_trade(asset, amount, buy):
             if asset == 'EUR':
-                return self.validate_eur(selling_amount)
+                return self.validate_eur(amount)
 
             return True
-        print(f"Error: Verify selling asset {asset} amount.")
+        print(f"Selling_asset error: Verify {asset} amount.")
         return False
 
 
     def execute(self, selling_asset, selling_amount, buying_asset, buying_amount):
+        if selling_asset == buying_asset:
+            print("No puedes comprar la misma moneda.")
+            return False
         return self.sell(selling_asset, selling_amount) and self.buy(buying_asset, buying_amount)
     
     

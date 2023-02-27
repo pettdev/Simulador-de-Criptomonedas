@@ -14,7 +14,7 @@ def createDB():
     con.close()
 
 
-def createTable():
+def createTradingTable():
     con = sql.connect('transactions.db')
     cur = con.cursor()
     cur.execute('''CREATE TABLE transactions (
@@ -29,3 +29,22 @@ def createTable():
                 )''')
     con.commit()
     con.close()
+
+
+def createAssetsTable():
+    con = sql.connect('transactions.db')
+    cur = con.cursor()
+    cur.execute('''CREATE TABLE assets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                    asset TEXT NOT NULL,
+                    amount REAL NOT NULL
+                )''')
+    con.commit()
+    con.close()
+
+def executeAll():
+    createDB()
+    createTradingTable()
+    createAssetsTable()
+
+#executeAll()

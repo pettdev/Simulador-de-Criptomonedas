@@ -43,7 +43,7 @@ def purchase():
             time = now.strftime("%H:%M:%S")
             date = now.strftime("%Y-%m-%d")
             
-            print('############################ Here ///////////////////////////////',
+            print('##### Ésto nunca cambiará ########## Here /////// Solo cuando la tabla cambie ///////',
                 validate_wallet.balances)
                     
             if validate_wallet.execute(coin_from, q_from, coin_to, q_to):
