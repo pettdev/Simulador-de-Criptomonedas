@@ -42,9 +42,11 @@ def createAssetsTable():
     con.commit()
     con.close()
 
+
 def executeAll():
     createDB()
     createTradingTable()
     createAssetsTable()
 
-#executeAll()
+
+#executeAll() # Para obtener una nueva BBDD, descomentar el código siguiente para crear una base de datos vacía, y nuevamente comentar

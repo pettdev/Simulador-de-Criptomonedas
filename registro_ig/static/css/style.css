@@ -99,5 +99,9 @@ div[data-tooltip="Calcular compra"]{
     padding: 3em;
     border-radius: 5px;
     border: #b71c1c solid 1px;
+}
 
+/* Status */
+.container span:nth-child(3n+1) {
+    font-weight: bold;
 }

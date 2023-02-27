@@ -54,7 +54,7 @@
             {% else %}
             <label for="{{ form.coin_from.name }}">
                 Moneda a vender:
-                <select name="{{ form.coin_from.name }}" id="{{ form.coin_from.id }}"> 
+                <select name="{{ form.coin_from.name }}" id="{{ form.coin_from.id }}" value="{{ form_values.coin_from_value }}"> 
                     {% for option in form.coin_from %}
                         {% if loop.first %}
                             <option value="" disabled selected>Seleccionar una opción</option>
@@ -81,7 +81,7 @@
             {% else %}
                 <label for="{{ form.coin_to.name }}">
                     Moneda a comprar:
-                    <select name="{{ form.coin_to.name }}" id="{{ form.coin_to.id }}">
+                    <select name="{{ form.coin_to.name }}" id="{{ form.coin_to.id }}" value="{{ form_values.coin_to_value }}">
                         {% for option in form.coin_to %}
                             {% if loop.first %}
                                 <option value disabled selected>Seleccionar una opción</option>
@@ -111,7 +111,7 @@
                 <label for="{{ form.q_from.name }}">
                     Cantidad a vender:
                     
-                    {{ form.q_from(placeholder="Ingresar cantidad a vender", min="1") }}
+                    {{ form.q_from(placeholder="Ingresar cantidad a vender", min="1", render_kw={"value":form_values.q_from_value}) }}
 
 
                 </label>
@@ -120,7 +120,7 @@
 
             <!-- Ícono de calculadora -->
             <div data-tooltip="Calcular compra">
-                <input type="image" class="grid" src="../static/images/calculator.svg" id="calculator" value="Calculate" name="calculate">
+                {{ form.calculator }}
             </div>
 
             
@@ -129,7 +129,7 @@
                 <div>
                     <label for="{{ form.q_to.name }}" class="errors">
                         Cantidad a comprar:
-                        {{ form.q_to(placeholder="Campo vacío", **{"aria-invalid": "true"}) }}
+                        {{ form.q_to }}
                     </label>
                 </div>
             {% else %}
@@ -147,7 +147,7 @@
             <div class="unit_price_container">
                 <label for="{{ form.unit_price.name }}" class="errors">
                     Precio unitario (P.U.):
-                    {{ form.unit_price (placeholder="Campo vacío", **{"aria-invalid": "true"})}}
+                    {{ form.unit_price }}
                 </label>
             </div>
         {% else %}

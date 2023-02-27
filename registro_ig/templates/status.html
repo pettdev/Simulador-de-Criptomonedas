@@ -13,13 +13,16 @@
 
 {% block section %}
     <div class="container">
-        <h5>Invertido:</h5>
-        <p>{{ invertido }}</p>
-        <h5>Recuperado:</h5>
-        <p>{{ recuperado }}</p>
-        <h5>Valor de compra</h5>
-        <p>{{ valor_compra }}</p>
-        <h5>Valor actual</h5>
-        <p>{{ valor_actual }}</p>
+        <span>Invertido:</span>
+        <span>{{ invertido }} EUR</span>
+        <br>
+        <span>Recuperado:</span>
+        <span>{{ recuperado }} EUR</span>
+        <br>
+        <span>Valor de compra:</span>
+        <span>{{ valor_compra }} EUR</span>
+        <br>
+        <span>Valor actual:</span>
+        <span>{{ valor_actual }} EUR</span>
     </div>
 {% endblock %}

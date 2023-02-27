@@ -9,7 +9,6 @@ class ModelError(Exception()):
 
 
 # Comunicación con API
-
 class Exchange():
     
     def get_rate(self, base, quota, API_KEY):
@@ -25,7 +24,7 @@ class Exchange():
             raise ModelError(f"Status: {r.status_code}. Error: {exchangeError}")
 
     def get_unit_price(self, q_from, q_to):
-            self.unit_price = q_from/q_to
+            return q_from/q_to
             
 
 # Métodos para manipulación de datos 
@@ -195,14 +194,12 @@ def get_current_value(coin_from_list, coin_to_list, ExchangeService):
                 euros = all_coins[coin] * exch.rate
                 output[coin] = euros
                 total += euros
-                
+        
         output["total_value"] = total
         
-        return output
+        return output["total_value"]
     
     raise ModelError("The coins variable must be a list object")
-
-# print(get_current_value(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange()))
 
 
 class AssetTradeValidator:
@@ -240,19 +237,12 @@ class AssetTradeValidator:
     def validate_buying_asset(self, asset, amount):
         # VERIFICAR EXISTENCIA
         if asset in self.purchased_assets:
+            # Si existe, incrementar
             increment_amount(amount, asset)
         else:
+            # De lo contrario, registrar
             register_asset([asset, amount])
         return True
-    
-    def buy(self):
-        pass
-    
-    def sell(self):
-        pass
-    
-    def trade(self):
-        pass
     
     def is_validated(self, selling_asset, selling_amount, buying_asset, buying_amount):
         return self.validate_selling_asset(selling_asset,selling_amount) and self.validate_buying_asset(buying_asset,buying_amount) and selling_asset != buying_asset
