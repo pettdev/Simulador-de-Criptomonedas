@@ -108,6 +108,44 @@ def get_each_coin_to_balance():
     return data
 
 
+def get_all_coins_balances():
+    coin_to_coins = dict(get_each_coin_to_balance())
+    coin_from_coins = dict(get_each_coin_from_balance())
+
+    # Unir diccionarios en sold_coins
+    for key, value in coin_to_coins.items():
+        coin_from_coins[key] = value
+        
+    return coin_from_coins
+
+
+def get_all_purchased_assets():
+    connection = Connection('SELECT asset, amount FROM assets;')
+    data = connection.res.fetchall()
+    connection.con.commit()
+    connection.con.close()
+    
+    return dict(data)
+
+
+def increment_amount(amount:float, asset:str):
+    connection = Connection(f"UPDATE assets set amount= amount + {amount} WHERE asset='{asset}'")
+    connection.con.commit()
+    connection.con.close()
+
+    
+def decrement_amount(amount:float, asset:str):
+    connection = Connection(f"UPDATE assets set amount= amount - {amount} WHERE asset='{asset}'")
+    connection.con.commit()
+    connection.con.close()
+
+
+def register_asset(register):
+    connection = Connection("INSERT INTO assets (asset, amount) VALUES (?, ?)", register)
+    connection.con.commit()
+    connection.con.close()
+
+
 # Obtener Valor Actual de la cuenta en euros
 def get_current_value(coin_from_list, coin_to_list, ExchangeService):
     
@@ -167,123 +205,54 @@ def get_current_value(coin_from_list, coin_to_list, ExchangeService):
 # print(get_current_value(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange()))
 
 
-def increment_amount(amount:float, asset:str):
-    connection = Connection(f"UPDATE assets set amount= amount + {amount} WHERE asset='{asset}'")
-    connection.con.commit()
-    connection.con.close()
-
-    
-def decrement_amount(amount:float, asset:str):
-    connection = Connection(f"UPDATE assets set amount= amount - {amount} WHERE asset='{asset}'")
-    connection.con.commit()
-    connection.con.close()
-
-
-def register_asset(register):
-    connection = Connection("INSERT INTO assets (asset, amount) VALUES (?, ?)", register)
-    connection.con.commit()
-    connection.con.close()
-
-
 class AssetTradeValidator:
-    def __init__(self, eur_balance):
+    def __init__(self):
         # Saldos de monedas
-        purchased_coins = dict(get_each_coin_to_balance()) # Compradas
-        sold_coins = dict(get_each_coin_from_balance()) # Vendidas
+        self.coins_wallet = get_all_coins_balances() # transactions table
+        self.purchased_assets = get_all_purchased_assets() # assets table
+    
+    
+    def set_balance(self, account_currency, account_balance):
+        if account_currency not in self.purchased_assets:
+            return register_asset([account_currency, account_balance]) # Verificar si retorna True si todo sale bien
 
-        # Unir diccionarios en sold_coins
-        for key, value in purchased_coins.items():
-            sold_coins[key] = value
-        
-        self.eur_balance = eur_balance
-        self.balances = sold_coins
 
-    def validate_eur(self, selling_amount):
-        
-        # Continúa solo si el balance de euros existe
-        if self.eur_balance:
-            # Agregar moneda euros si no existe
-            if 'EUR' not in self.balances:
-                self.balances['EUR'] = 0
-                register_asset(['EUR', 0])
-
-            # Euros disponibles: Saldo del Usuario - Total Euros gastados (de la BBDD)
-            eur_available = self.eur_balance - self.balances['EUR']
-
-            # Si la cantidad de venta > saldo disponible de euros:
-            if selling_amount > eur_available:
-                print(f"\nNot enough EUR balance. The cost is {selling_amount}, but you have only {eur_available} EUR.\n")
+    def validate_selling_asset(self, asset, amount):
+        # VERIFICAR EXISTENCIA
+        # Si existe en assets table
+        if asset in self.purchased_assets:
+            # Verificar si se puede adquirir
+            if amount > self.purchased_assets[asset]:
+                print(f'selling_asset error: insufficient {asset} balance. Price is {amount}, but you only have {self.purchased_assets[asset]} {asset}')
                 return False
-            # Si la diferencia del saldo disponible y el gasto total es negativa:
-            elif eur_available < 0:
-                print(f"Fondos insuficientes. Por favor, recargar.")
+            elif self.purchased_assets[asset] - amount > self.purchased_assets[asset]:
+                print(f'selling_asset error: the {asset} balance cannot be negative ({amount}). Please, verify.')
                 return False
-            
-            return True
-        print("Nonexistent euro balance.")
-        return False
-
-
-    def validate_trade(self, asset, amount, buy): 
-        # Si es una venta
-        if not buy:
-            # Si no existe como moneda de compra, no permitir
-            if asset not in self.balances:
-                # Permitir agregar EUR por primera vez
-                if asset == 'EUR':
-                    return True
-                return False
-            # Aplicar validaciones al monto de todas las monedas (excepto EUR)
-            elif asset != 'EUR':
+            # Si no hay problemas, descontar
+            else:
                 decrement_amount(amount, asset)
-                # No puede superar el balance
-                if amount > self.balances[asset]:
-                    print(f"Not enough {asset} balance. The cost is {amount}, but you have only {self.balances[asset]} {asset}.")
-                    return False
-                # No puede ser negativo
-                elif amount < 0:
-                    print(f"The amount can't be a negative balance. Your current EUR balance is {self.balances[asset]} {asset}.")
-                    return False
-            else:
-                # Si no existe, sumar
-                increment_amount(amount, asset)
-                
-        # Si es una compra
+                return True
+        # Si no existe en assets table
+        print(f"selling_asset error: nonexistent {asset} asset.")
+        return False
+            
+    
+    def validate_buying_asset(self, asset, amount):
+        # VERIFICAR EXISTENCIA
+        if asset in self.purchased_assets:
+            increment_amount(amount, asset)
         else:
-            # Superada la validación sell, permitir agregar moneda comprada
-            if asset not in self.balances:
-                register_asset([asset, amount])
-            else:
-                increment_amount(amount, asset)
+            register_asset([asset, amount])
         return True
-        
     
-    def buy(self, asset, amount, buy=True):
-        if self.validate_trade(asset, amount, buy):
-            return True
-        print(f"Buying_asset error: Verify {asset} amount.")
-        return False
+    def buy(self):
+        pass
     
+    def sell(self):
+        pass
     
-    def sell(self, asset, amount, buy=False):
-        if self.validate_trade(asset, amount, buy):
-            if asset == 'EUR':
-                return self.validate_eur(amount)
-
-            return True
-        print(f"Selling_asset error: Verify {asset} amount.")
-        return False
-
-
-    def execute(self, selling_asset, selling_amount, buying_asset, buying_amount):
-        if selling_asset == buying_asset:
-            print("No puedes comprar la misma moneda.")
-            return False
-        return self.sell(selling_asset, selling_amount) and self.buy(buying_asset, buying_amount)
+    def trade(self):
+        pass
     
-    
-    def get_asset_balance(self, asset):
-        return self.balances[asset]
-    
-    
-    
+    def is_validated(self, selling_asset, selling_amount, buying_asset, buying_amount):
+        return self.validate_selling_asset(selling_asset,selling_amount) and self.validate_buying_asset(buying_asset,buying_amount) and selling_asset != buying_asset

@@ -26,7 +26,8 @@ def purchase():
     eur_balance = 1000 # Balance de euros
     
     # Validador de Cartera
-    validate_wallet = AssetTradeValidator(eur_balance)
+    validate_trade = AssetTradeValidator()
+    validate_trade.set_balance('EUR', eur_balance)
     
     # # POST - Botón de formulario # #
     if 'submit_button' in request.form:
@@ -38,15 +39,13 @@ def purchase():
 
         if form.validate_on_submit():
             
-             # Obtener Fecha y Hora
+            # Obtener Fecha y Hora
             now = datetime.now()
             time = now.strftime("%H:%M:%S")
             date = now.strftime("%Y-%m-%d")
             
-            print('##### Ésto nunca cambiará ########## Here /////// Solo cuando la tabla cambie ///////',
-                validate_wallet.balances)
-                    
-            if validate_wallet.execute(coin_from, q_from, coin_to, q_to):
+            if validate_trade.is_validated(coin_from, q_from, coin_to, q_to):
+                
                 insert_row([date, time, coin_from, q_from, coin_to, q_to, unit_price])
 
                 # SERÍA BUENO QUE FUNCIONARA EL FLASH para accesibilidad de errores.
