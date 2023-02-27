@@ -81,8 +81,17 @@ def purchase():
 def status():
     
     invertido = round(get_eur_inversion()[0][1], 2)
-    recuperado = round(get_eur_recovery()[0][1], 2)
+    # recuperado = round(get_eur_recovery()[0][1], 2)
+    
+    if get_eur_recovery()[0][1] is not None:
+        recuperado = round(recuperado[0][1], 2)
+    else:
+        recuperado = 0.00
+        
     valor_compra = round(get_acquisition_value(invertido, recuperado), 2)
+    
+
+
     valor_actual = round(get_current_value(get_each_coin_from_balance(), get_each_coin_to_balance(), Exchange()), 2)
     
     return render_template('status.html', pageTitle='Estado de la inversión', status="secondary", page='status', invertido=invertido, recuperado=recuperado, valor_compra=valor_compra, valor_actual=valor_actual)

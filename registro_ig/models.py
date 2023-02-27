@@ -75,7 +75,7 @@ def get_eur_recovery():
     data = connection.res.fetchall()
     connection.con.commit()
     connection.con.close()
-
+    
     return data
 
 
