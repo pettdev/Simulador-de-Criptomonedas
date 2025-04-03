@@ -61,12 +61,14 @@ def table_display():
 
 # Obtener suma total de INVERSIÓN cuya moneda sea EUROS
 def get_eur_inversion():
-    connection = Connection("SELECT coin_from, SUM (q_from) FROM transactions WHERE coin_from='EUR'")
+    connection = Connection("SELECT coin_from, SUM(q_from) FROM transactions WHERE coin_from='EUR'")
     data = connection.res.fetchall()
-    connection.con.commit()
     connection.con.close()
     
-    return data
+    # Handle database NULL and empty result cases
+    if data and data[0][1] is not None:
+        return data
+    return [('EUR', 0.0)]
 
 
 # Obtener suma total RECUPERADO cuya moneda sea EUROS

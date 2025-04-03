@@ -79,8 +79,12 @@ def purchase():
 
 @app.route("/status")
 def status():
+    # Get raw data from model
+    raw_data = get_eur_inversion()
     
-    invertido = round(get_eur_inversion()[0][1], 2)
+    # Safely extract numeric value
+    invertido = round(float(raw_data[0][1]), 2)
+    
     # recuperado = round(get_eur_recovery()[0][1], 2)
     
     if get_eur_recovery()[0][1] is not None:
