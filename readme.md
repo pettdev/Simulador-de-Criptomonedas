@@ -21,9 +21,9 @@ FLASK_DEBUG=true
 
 ## 3. Agregar key
 
-- Renombrar el archivo `.config_template.py` a **config.py**.
-- Obtener key (gratuita) de [Market Data API](https://docs.coinapi.io/market-data/) de CoinAPI
-- Aplicar key en `config.py` renombrado dentro de las comillas dobles:
+1. Renombrar el archivo `.config_template.py` a **config.py**.
+2. Obtener key (gratuita) de [Market Data API](https://docs.coinapi.io/market-data/) de CoinAPI
+3. Aplicar key en `config.py` renombrado dentro de las comillas dobles:
 
 ```
 API_KEY="INGRESA TU API_KEY"
